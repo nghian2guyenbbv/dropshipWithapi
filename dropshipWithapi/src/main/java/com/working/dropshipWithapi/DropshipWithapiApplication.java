@@ -20,9 +20,10 @@ public class DropshipWithapiApplication {
 
     ApplicationContext context = SpringApplication.run(DropshipWithapiApplication.class, args);
     GetInfoFromSelly sellyInfo = context.getBean(GetInfoFromSelly.class);
-    SellyInfoResponse response = sellyInfo.getInfoFromSelly();
-    List<Brand> branch = response.getData().getProducts().stream().map(Product::getBrand).collect(Collectors.toList());
-    branch.stream().filter(Objects::nonNull).forEach(br->System.out.println(br.getDesc()));
+    //SellyInfoResponse response = sellyInfo.getInfoFromSelly();
+        sellyInfo.getImageAsFile("https://media.sellycdn.net/files/md_2023_03_29_07_02_38_0700_PcSfjroPdF.jpg");
+    //List<Brand> branch = response.getData().getProducts().stream().map(Product::getBrand).collect(Collectors.toList());
+    //branch.stream().filter(Objects::nonNull).forEach(br -> System.out.println(br.getDesc()));
   }
 
 }

@@ -12,17 +12,17 @@ import java.io.IOException;
 
 @Service
 public class GetInfoFromSelly {
-  /*@Autowired
-  private RestTemplate restTemplate;*/
+  @Autowired
+  private RestTemplate restTemplate;
   public SellyInfoResponse getInfoFromSelly() {
-    RestTemplate restTemplate = new RestTemplate();
+    //RestTemplate restTemplate = new RestTemplate();
     String fooResourceUrl = "https://app-api.selly.vn/products?limit=1&page=0&total=0&nextPageToken=&isAvailable=true&keyword=quan%20lung%20nam";
     ResponseEntity<SellyInfoResponse> response = restTemplate.getForEntity(fooResourceUrl + "/1",
         SellyInfoResponse.class);
     return response.getBody();
   }
 
-  private static void getImageAsFile(String imagesUrl) {
+  public void getImageAsFile(String imagesUrl) {
     RestTemplate restTemplate = new RestTemplate();
     String destinationPath = "D:/NghiaNguyen/dropShipWithApi/dropshipWithapi/dropshipWithapi/image.jpg";
     ResponseEntity<byte[]> response = restTemplate.getForEntity(imagesUrl, byte[].class);
@@ -42,6 +42,6 @@ public class GetInfoFromSelly {
     ResponseEntity<SellyInfoResponse> response
         = restTemplate.getForEntity(fooResourceUrl + "/1", SellyInfoResponse.class);
     System.out.println("respones: "+response.getBody().toString());*/
-    getImageAsFile("https://media.sellycdn.net/files/md_2023_03_29_07_02_38_0700_PcSfjroPdF.jpg");
+    //getImageAsFile("https://media.sellycdn.net/files/md_2023_03_29_07_02_38_0700_PcSfjroPdF.jpg");
   }
 }

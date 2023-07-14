@@ -1,11 +1,13 @@
 package com.working.dropshipWithapi.service.shopee;
 
 import com.working.dropshipWithapi.service.shopee.createProduct.CreateProductService;
+import com.working.dropshipWithapi.service.shopee.request.CreateProductCriteria;
 import com.working.dropshipWithapi.service.shopee.response.CreateProductShopeeResponse;
 import com.working.dropshipWithapi.service.shopee.uploadImage.UploadImageShopee;
 import com.working.dropshipWithapi.service.util.Utils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -30,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -42,12 +45,12 @@ public class ShopeeService {
   @Autowired
   private CreateProductService createProductService;
 
-  public void createShopeeProduct(){
-    createProductService.createProduct();
+  public void createShopeeProduct(CreateProductCriteria createProductCriteria){
+    createProductService.createProduct(createProductCriteria);
   };
 
   public List<String> uploadImagesToShopee() {
-    String folderImagePath = "C:/Users/nghia2nguyen/Pictures/upload_image_folder";
+    String folderImagePath = "D:/NghiaNguyen/dropShipWithApi/dropshipWithapi/dropshipWithapi/imageFromSelly";
     List<Path> filePaths = Collections.emptyList();
     try {
       filePaths = Files.list(Path.of(folderImagePath)).filter(Files::isRegularFile)
@@ -63,7 +66,22 @@ public class ShopeeService {
         listKeysImage.add(rp);
       }
     });
+    removeImageInfolder().accept(folderImagePath);
     return listKeysImage;
+  }
+
+  private Consumer<String> removeImageInfolder() {
+    return folderPath -> {
+      File folder = new File(folderPath);
+      if (folder.exists() && folder.isDirectory()) {
+        try {
+          FileUtils.cleanDirectory(folder);
+        } catch (IOException ex) {
+          System.out.println("can't delete file " + ex);
+        }
+      }
+
+    };
   }
 
 }

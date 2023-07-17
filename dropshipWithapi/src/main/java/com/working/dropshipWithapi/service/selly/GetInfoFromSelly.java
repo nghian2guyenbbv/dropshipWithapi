@@ -70,16 +70,16 @@ public class GetInfoFromSelly extends CommonConstant {
     };
   }
 
-  public String getImageAsFile(String imagesUrl) {
+  public String getImageAsFile(String imagesUrl, String productName) {
     String imageName = getImageNameFromUrl().apply(imagesUrl);
+    String endFile = Stream.of(imageName.split("[.]")).filter(s->!s.contains("_")).findFirst().get();
     RestTemplate restTemplate = new RestTemplate();
-    /*String destinationPath = "D:/NghiaNguyen/dropShipWithApi/dropshipWithapi/dropshipWithapi/"+imageName;*/
-    String destinationPath = sellyImageFolder + imageName;
+    String destinationPath = sellyImageFolder + productName+"."+endFile;
     ResponseEntity<byte[]> response = restTemplate.getForEntity(imagesUrl, byte[].class);
     byte[] imageBytes = response.getBody();
     try (FileOutputStream fos = new FileOutputStream(destinationPath)) {
       fos.write(imageBytes);
-      System.out.println("Image downloaded successfully." + imageName);
+      System.out.println("Image downloaded successfully." + productName);
     } catch (IOException e) {
       System.out.println("Error saving image: " + e.getMessage());
     }

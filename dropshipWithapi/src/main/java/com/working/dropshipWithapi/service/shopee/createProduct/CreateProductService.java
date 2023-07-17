@@ -1,6 +1,7 @@
 package com.working.dropshipWithapi.service.shopee.createProduct;
 
 import com.working.dropshipWithapi.service.selly.GetInfoFromSelly;
+import com.working.dropshipWithapi.service.shopee.ShopeeService;
 import com.working.dropshipWithapi.service.shopee.request.CreateProductCriteria;
 import com.working.dropshipWithapi.service.shopee.response.CreateProductShopeeResponse;
 import org.apache.commons.lang3.StringUtils;
@@ -23,6 +24,7 @@ import org.springframework.web.client.RestTemplate;
 import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -41,8 +43,9 @@ public class CreateProductService {
   private String createProductUrl;
   @Value("${shopee.createProduct.cookie}")
   private String createProductCookie;
-  @Value("${shopee.createProduct.uploadImage.token}")
-  String tokenUpload;
+
+  @Autowired
+  private ShopeeService shopeeService;
   public static String createProductBody = "[\n" + "    {\n" + "        \"id\": 0,\n"
       + "        \"name\": \"adsassdasdsdasdsasdsda\",\n" + "        \"brand_id\": 0,\n" + "        \"images\": [\n"
       + "            \"vn-11134207-7qukw-lj89mb12dxjg3b\"\n" + "        ],\n" + "        \"long_images\": [],\n"
@@ -78,28 +81,39 @@ public class CreateProductService {
       + "        \"category_recommend\": [],\n"
       + "        \"ds_attr_rcmd_id\": \"06f5fd32-9416-49a1-bb8d-abdf45a487ce\",\n" + "        \"unlisted\": false\n"
       + "    }\n" + "]";
-  public void createProduct(CreateProductCriteria createProductCriteria) {
 
+  public void createProduct(CreateProductCriteria createProductCriteria) {
     RestTemplate restTemplate = new RestTemplate();
     // Create HttpHeaders and add the cookie
     HttpHeaders headers = new HttpHeaders();
     headers.add(COOKIE, createProductCookie);
 
     headers.add(CONTENT_TYPE, "application/json;charset=UTF-8");
+/*
 
     String updatedBody = CommonCreateProduct.updateProductInfo(createProductCriteria.getProductName(), createProductCriteria.getDescription(), createProductBody);
+*/
+
+    /*List<String> listImageName = new ArrayList<>();
+    int i = 0;
+    for(String imgUrl : createProductCriteria.getShareImages()){
+      System.out.println("-----get image ----"+imgUrl);
+      String imageName = getInfoFromSelly.getImageAsFile(imgUrl, createProductCriteria.getProductName().replace(" ", "_")+"_"+i);
+      i++;
+      listImageName.add(imageName);
+    }*/
+    /*List<String> listImageKey = shopeeService.uploadImagesToShopee();
+    listImageKey.stream().forEach(System.out::println);*/
+    List<String> listImageKey = Arrays.asList(
+        "vn-07162023-COMBO_LUNG_HEALTH_COVID_&_HẬU_COVID,_SỐNG_CHUNG_VỚI_COVID,_KHÔNG_LO_DI_CHỨNG_-_MEDPHARM_0",
+        "vn-07162023-COMBO_LUNG_HEALTH_COVID_&_HẬU_COVID,_SỐNG_CHUNG_VỚI_COVID,_KHÔNG_LO_DI_CHỨNG_-_MEDPHARM_1");
+    String updatedBody = CommonCreateProduct.updateProductInfo(createProductCriteria.getProductName(),
+        createProductCriteria.getDescription(), listImageKey, createProductBody);
 
     // Create a RequestEntity with the headers
     RequestEntity<String> requestEntity = new RequestEntity<String>(
         Optional.ofNullable(updatedBody).isPresent() ? updatedBody : StringUtils.EMPTY, headers, HttpMethod.POST,
         URI.create(createProductUrl));
-
-    List<String> listImageName = new ArrayList<>();
-    createProductCriteria.getShareImages().forEach(imgUrl->{
-        System.out.println("-----get image ----"+imgUrl);
-      String imageName = getInfoFromSelly.getImageAsFile(imgUrl);
-      listImageName.add(imageName);
-    });
 
     ResponseEntity<CreateProductShopeeResponse> response = restTemplate.exchange(requestEntity,
         CreateProductShopeeResponse.class);
@@ -127,36 +141,5 @@ public class CreateProductService {
     return StringUtils.EMPTY;
   }
 
-  public Function<String, String> uploadImageIntoShopee(String fileName) {
-      String[] fileN = fileName.split("\\.");
-      String key = "vn-11134207-nghia_upload3_"+ fileN[0];
-      String mimeType = "image/jpeg";
-      String urlUpload = "https://upload.ws.img.shopee.com/file/upload";
-      RestTemplate restTemplate = new RestTemplate();
-      return fileToUPload -> {
-        File imageF = new File(fileToUPload);
-        System.out.println("imageF: " + imageF.getAbsolutePath());
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Origin", "https://banhang.shopee.vn");
-        // Create the MultiValueMap to hold the form data
-        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-
-        // Add the binary file to the form data
-        body.add("file", new FileSystemResource(imageF));
-        body.add("token", tokenUpload);
-        body.add("key", key);
-        body.add("mimeType", "image/jpeg");
-        // Create the RequestEntity with the form data and headers
-        RequestEntity<MultiValueMap<String, Object>> requestEntity = new RequestEntity<>(body, headers, HttpMethod.POST,
-            URI.create(urlUpload));
-        boolean isUploadSucess = false;
-        try {
-          ResponseEntity<String> response = restTemplate.exchange(requestEntity, String.class);
-        } catch (HttpServerErrorException ex) {
-          isUploadSucess = ex.getStatusCode()!=null && ex.getMessage().contains("hash");
-        }
-        return isUploadSucess ? key : StringUtils.EMPTY;
-      };
-    }
 
 }

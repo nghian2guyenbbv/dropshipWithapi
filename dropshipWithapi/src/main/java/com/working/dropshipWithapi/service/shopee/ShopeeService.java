@@ -21,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
@@ -42,12 +43,10 @@ public class ShopeeService {
   @Autowired
   private Utils utils;
 
-  @Autowired
-  private CreateProductService createProductService;
+  @Value("${shopee.createProduct.uploadImage.token}")
+  String tokenUpload;
 
-  public void createShopeeProduct(CreateProductCriteria createProductCriteria){
-    createProductService.createProduct(createProductCriteria);
-  };
+
 
   public List<String> uploadImagesToShopee() {
     String folderImagePath = "D:/NghiaNguyen/dropShipWithApi/dropshipWithapi/dropshipWithapi/imageFromSelly";
@@ -61,7 +60,7 @@ public class ShopeeService {
     }
     List<String> listKeysImage = new ArrayList<String>();
     CollectionUtils.emptyIfNull(filePaths).stream().forEach(path->{
-      String rp = createProductService.uploadImageIntoShopee(path.toFile().getName()).apply(path.toString());
+      String rp = uploadImageIntoShopee(path.toFile().getName()).apply(path.toString());
       if (!StringUtils.EMPTY.equalsIgnoreCase(rp)) {
         listKeysImage.add(rp);
       }
@@ -81,6 +80,37 @@ public class ShopeeService {
         }
       }
 
+    };
+  }
+
+  public Function<String, String> uploadImageIntoShopee(String fileName) {
+    String[] fileN = fileName.split("\\.");
+    String key = "vn-07162023-"+ fileN[0];
+    String urlUpload = "https://upload.ws.img.shopee.com/file/upload";
+    RestTemplate restTemplate = new RestTemplate();
+    return fileToUPload -> {
+      File imageF = new File(fileToUPload);
+      System.out.println("imageF: " + imageF.getAbsolutePath());
+      HttpHeaders headers = new HttpHeaders();
+      headers.add("Origin", "https://banhang.shopee.vn");
+      // Create the MultiValueMap to hold the form data
+      MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+
+      // Add the binary file to the form data
+      body.add("file", new FileSystemResource(imageF));
+      body.add("token", tokenUpload);
+      body.add("key", key);
+      body.add("mimeType", "image/jpeg");
+      // Create the RequestEntity with the form data and headers
+      RequestEntity<MultiValueMap<String, Object>> requestEntity = new RequestEntity<>(body, headers, HttpMethod.POST,
+          URI.create(urlUpload));
+      boolean isUploadSucess = false;
+      try {
+        ResponseEntity<String> response = restTemplate.exchange(requestEntity, String.class);
+      } catch (HttpServerErrorException ex) {
+        isUploadSucess = ex.getStatusCode()!=null && ex.getMessage().contains("hash");
+      }
+      return isUploadSucess ? key : StringUtils.EMPTY;
     };
   }
 

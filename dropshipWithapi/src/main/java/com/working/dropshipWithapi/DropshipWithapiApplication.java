@@ -20,20 +20,20 @@ import java.util.stream.Collectors;
 public class DropshipWithapiApplication {
 
   public static void main(String[] args) {
-
+    String searchKeys = "quan lung nam";
     ApplicationContext context = SpringApplication.run(DropshipWithapiApplication.class, args);
     GetInfoFromSelly sellyInfo = context.getBean(GetInfoFromSelly.class);
     ShopeeService shopeeService = context.getBean(ShopeeService.class);
     CreateProductService createProductService = context.getBean(CreateProductService.class);
     /*B1 get product info*/
-    SellyInfoResponse response = sellyInfo.getInfoFromSelly("quan lung nam");
+    SellyInfoResponse response = sellyInfo.getInfoFromSelly(searchKeys);
     /*List<String> listImage = shopeeService.uploadImagesToShopee();
     listImage.stream().forEach(System.out::println);*/
     /*B2 Create product*/
      response.getData().getProducts().forEach(pr-> {
       createProductService.createProduct(
           CreateProductCriteria.builder().productName(pr.getName()).description(pr.getShareDesc())
-              .shareImages(pr.getShareImages()).build());
+              .shareImages(pr.getShareImages()).searchKey(searchKeys).build());
     });
   }
 

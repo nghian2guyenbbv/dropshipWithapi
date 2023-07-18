@@ -16,5 +16,6 @@ public class CreateProductCriteria {
   private String description;
   private int price = 500000;
   private List<String> shareImages;
+  private String searchKey;
 
 }

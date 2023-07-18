@@ -87,26 +87,21 @@ public class CreateProductService {
     // Create HttpHeaders and add the cookie
     HttpHeaders headers = new HttpHeaders();
     headers.add(COOKIE, createProductCookie);
-
     headers.add(CONTENT_TYPE, "application/json;charset=UTF-8");
-/*
-
-    String updatedBody = CommonCreateProduct.updateProductInfo(createProductCriteria.getProductName(), createProductCriteria.getDescription(), createProductBody);
-*/
-
-    /*List<String> listImageName = new ArrayList<>();
+    List<String> listImageName = new ArrayList<>();
     int i = 0;
-    for(String imgUrl : createProductCriteria.getShareImages()){
+    /*for(String imgUrl : createProductCriteria.getShareImages()){
       System.out.println("-----get image ----"+imgUrl);
       String imageName = getInfoFromSelly.getImageAsFile(imgUrl, createProductCriteria.getProductName().replace(" ", "_")+"_"+i);
+      List<String> listImageKey = shopeeService.uploadImagesToShopee(createProductCriteria.getSearchKey(), i);
+      listImageKey.stream().forEach(System.out::println);
       i++;
       listImageName.add(imageName);
     }*/
-    /*List<String> listImageKey = shopeeService.uploadImagesToShopee();
+    // Upload images get keys
+    /*List<String> listImageKey = shopeeService.uploadImagesToShopee(createProductCriteria.getSearchKey(), i);
     listImageKey.stream().forEach(System.out::println);*/
-    List<String> listImageKey = Arrays.asList(
-        "vn-07162023-COMBO_LUNG_HEALTH_COVID_&_HẬU_COVID,_SỐNG_CHUNG_VỚI_COVID,_KHÔNG_LO_DI_CHỨNG_-_MEDPHARM_0",
-        "vn-07162023-COMBO_LUNG_HEALTH_COVID_&_HẬU_COVID,_SỐNG_CHUNG_VỚI_COVID,_KHÔNG_LO_DI_CHỨNG_-_MEDPHARM_1");
+    List<String> listImageKey = Arrays.asList("vn-07162023-quan_lung_nam_0", "vn-07162023-quan_lung_nam_1");
     String updatedBody = CommonCreateProduct.updateProductInfo(createProductCriteria.getProductName(),
         createProductCriteria.getDescription(), listImageKey, createProductBody);
 
@@ -114,7 +109,6 @@ public class CreateProductService {
     RequestEntity<String> requestEntity = new RequestEntity<String>(
         Optional.ofNullable(updatedBody).isPresent() ? updatedBody : StringUtils.EMPTY, headers, HttpMethod.POST,
         URI.create(createProductUrl));
-
     ResponseEntity<CreateProductShopeeResponse> response = restTemplate.exchange(requestEntity,
         CreateProductShopeeResponse.class);
     Optional.ofNullable(response).ifPresent(rs -> System.out.println(rs.getBody()));

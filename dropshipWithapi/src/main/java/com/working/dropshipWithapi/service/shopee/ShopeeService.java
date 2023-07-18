@@ -48,7 +48,7 @@ public class ShopeeService {
 
 
 
-  public List<String> uploadImagesToShopee() {
+  public List<String> uploadImagesToShopee(String searchKey, int index) {
     String folderImagePath = "D:/NghiaNguyen/dropShipWithApi/dropshipWithapi/dropshipWithapi/imageFromSelly";
     List<Path> filePaths = Collections.emptyList();
     try {
@@ -60,11 +60,13 @@ public class ShopeeService {
     }
     List<String> listKeysImage = new ArrayList<String>();
     CollectionUtils.emptyIfNull(filePaths).stream().forEach(path->{
-      String rp = uploadImageIntoShopee(path.toFile().getName()).apply(path.toString());
+      String rp = uploadImageIntoShopee(path.toFile().getName(), searchKey, index).apply(path.toString());
       if (!StringUtils.EMPTY.equalsIgnoreCase(rp)) {
+        System.out.println("--key-----"+rp);
         listKeysImage.add(rp);
       }
-    });
+    }
+    );
     removeImageInfolder().accept(folderImagePath);
     return listKeysImage;
   }
@@ -83,9 +85,10 @@ public class ShopeeService {
     };
   }
 
-  public Function<String, String> uploadImageIntoShopee(String fileName) {
+  public Function<String, String> uploadImageIntoShopee(String fileName, String searchKey, int index) {
     String[] fileN = fileName.split("\\.");
     String key = "vn-07162023-"+ fileN[0];
+    String shopeeKey = "vn-07162023-"+searchKey.replace(" ", "_")+"_"+index;
     String urlUpload = "https://upload.ws.img.shopee.com/file/upload";
     RestTemplate restTemplate = new RestTemplate();
     return fileToUPload -> {
@@ -99,7 +102,7 @@ public class ShopeeService {
       // Add the binary file to the form data
       body.add("file", new FileSystemResource(imageF));
       body.add("token", tokenUpload);
-      body.add("key", key);
+      body.add("key", shopeeKey);
       body.add("mimeType", "image/jpeg");
       // Create the RequestEntity with the form data and headers
       RequestEntity<MultiValueMap<String, Object>> requestEntity = new RequestEntity<>(body, headers, HttpMethod.POST,
@@ -110,7 +113,7 @@ public class ShopeeService {
       } catch (HttpServerErrorException ex) {
         isUploadSucess = ex.getStatusCode()!=null && ex.getMessage().contains("hash");
       }
-      return isUploadSucess ? key : StringUtils.EMPTY;
+      return isUploadSucess ? shopeeKey : StringUtils.EMPTY;
     };
   }
 

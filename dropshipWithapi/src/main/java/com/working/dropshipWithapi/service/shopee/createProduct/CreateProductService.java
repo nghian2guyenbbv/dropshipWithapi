@@ -101,7 +101,7 @@ public class CreateProductService {
     // Upload images get keys
     /*List<String> listImageKey = shopeeService.uploadImagesToShopee(createProductCriteria.getSearchKey(), i);
     listImageKey.stream().forEach(System.out::println);*/
-    List<String> listImageKey = Arrays.asList("vn-07162023-quan_lung_nam_0", "vn-07162023-quan_lung_nam_1");
+    List<String> listImageKey = Arrays.asList("vn-11134207-7qukw-ljed8xcoqxg22c", "vn-11134207-7qukw-ljed8xcosc0i1a");
     String updatedBody = CommonCreateProduct.updateProductInfo(createProductCriteria.getProductName(),
         createProductCriteria.getDescription(), listImageKey, createProductBody);
 
@@ -111,7 +111,7 @@ public class CreateProductService {
         URI.create(createProductUrl));
     ResponseEntity<CreateProductShopeeResponse> response = restTemplate.exchange(requestEntity,
         CreateProductShopeeResponse.class);
-    Optional.ofNullable(response).ifPresent(rs -> System.out.println(rs.getBody()));
+    Optional.ofNullable(response).ifPresent(rs -> System.out.println(rs.getBody().getMessage()));
   }
 
   private static String updateProductName(String itemName, String rawBody) {

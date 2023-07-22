@@ -48,19 +48,11 @@ public class ShopeeService {
 
 
 
-  public List<String> uploadImagesToShopee(String searchKey, int index) {
+  public List<String> uploadImagesToShopee(String imgUrl, List<Path> filePaths) {
     String folderImagePath = "D:/NghiaNguyen/dropShipWithApi/dropshipWithapi/dropshipWithapi/imageFromSelly";
-    List<Path> filePaths = Collections.emptyList();
-    try {
-      filePaths = Files.list(Path.of(folderImagePath)).filter(Files::isRegularFile)
-          .map(file -> file.toAbsolutePath()).collect(Collectors.toList());
-      filePaths.stream().map(path -> path.toString()).forEach(System.out::println);
-    } catch (Exception ex) {
-      ex.printStackTrace();
-    }
     List<String> listKeysImage = new ArrayList<String>();
     CollectionUtils.emptyIfNull(filePaths).stream().forEach(path->{
-      String rp = uploadImageIntoShopee(path.toFile().getName(), searchKey, index).apply(path.toString());
+      String rp = uploadImageIntoShopee(path.toFile().getName()).apply(path.toString());
       if (!StringUtils.EMPTY.equalsIgnoreCase(rp)) {
         System.out.println("--key-----"+rp);
         listKeysImage.add(rp);
@@ -85,15 +77,13 @@ public class ShopeeService {
     };
   }
 
-  public Function<String, String> uploadImageIntoShopee(String fileName, String searchKey, int index) {
+  public Function<String, String> uploadImageIntoShopee(String fileName) {
     String[] fileN = fileName.split("\\.");
-    String key = "vn-07162023-"+ fileN[0];
-    String shopeeKey = "vn-07162023-"+searchKey.replace(" ", "_")+"_"+index;
+    String shopeeKey = "vn-07162023-"+ fileN[0];
     String urlUpload = "https://upload.ws.img.shopee.com/file/upload";
     RestTemplate restTemplate = new RestTemplate();
     return fileToUPload -> {
       File imageF = new File(fileToUPload);
-      System.out.println("imageF: " + imageF.getAbsolutePath());
       HttpHeaders headers = new HttpHeaders();
       headers.add("Origin", "https://banhang.shopee.vn");
       // Create the MultiValueMap to hold the form data

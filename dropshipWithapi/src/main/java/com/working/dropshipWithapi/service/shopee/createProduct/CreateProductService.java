@@ -23,12 +23,15 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class CreateProductService {
@@ -82,6 +85,19 @@ public class CreateProductService {
       + "        \"ds_attr_rcmd_id\": \"06f5fd32-9416-49a1-bb8d-abdf45a487ce\",\n" + "        \"unlisted\": false\n"
       + "    }\n" + "]";
 
+  private List<Path> getListImgPath() {
+    String folderImagePath = "D:/NghiaNguyen/dropShipWithApi/dropshipWithapi/dropshipWithapi/imageFromSelly";
+    List<Path> filePaths = Collections.emptyList();
+    try {
+      filePaths = Files.list(Path.of(folderImagePath)).filter(Files::isRegularFile).map(file -> file.toAbsolutePath())
+          .collect(Collectors.toList());
+      filePaths.stream().map(path -> path.toString()).forEach(System.out::println);
+    } catch (Exception ex) {
+      ex.printStackTrace();
+    }
+    return filePaths;
+  }
+
   public void createProduct(CreateProductCriteria createProductCriteria) {
     RestTemplate restTemplate = new RestTemplate();
     // Create HttpHeaders and add the cookie
@@ -89,23 +105,22 @@ public class CreateProductService {
     headers.add(COOKIE, createProductCookie);
     headers.add(CONTENT_TYPE, "application/json;charset=UTF-8");
     List<String> listImageName = new ArrayList<>();
-    int i = 0;
-    /*for(String imgUrl : createProductCriteria.getShareImages()){
-      System.out.println("-----get image ----"+imgUrl);
-      String imageName = getInfoFromSelly.getImageAsFile(imgUrl, createProductCriteria.getProductName().replace(" ", "_")+"_"+i);
-      List<String> listImageKey = shopeeService.uploadImagesToShopee(createProductCriteria.getSearchKey(), i);
+    List<String> listImageKey = null;
+    for (String imgUrl : createProductCriteria.getShareImages()) {
+      System.out.println("-----get image ----" + imgUrl);
+      // get Image from selly
+      getInfoFromSelly.getImageAsFile(imgUrl);
+      List<Path> listImagePath = getListImgPath();
+      //listImagePath.forEach(imgPath-> System.out.println("imagePath: "+imgPath));
+      //List<String> listImageKey = Arrays.asList("vn-07162023-ACTIVE_MEN_PLUS_HỖ_TRỢ_TĂNG_CƯỜNG_SINH_LỰC_NAM_GIỚI,_KÉO_DÀI_THỜI_GIAN_QUAN_HỆ_HỘP_30_VIÊN_-_DOPPELHERZ_3", "vn-07162023-ACTIVE_MEN_PLUS_HỖ_TRỢ_TĂNG_CƯỜNG_SINH_LỰC_NAM_GIỚI,_KÉO_DÀI_THỜI_GIAN_QUAN_HỆ_HỘP_30_VIÊN_-_DOPPELHERZ_4");
+      listImageKey = shopeeService.uploadImagesToShopee(imgUrl, listImagePath);
       listImageKey.stream().forEach(System.out::println);
-      i++;
-      listImageName.add(imageName);
-    }*/
+      /* remove all file in selly image folder*/
+    }
     // Upload images get keys
-    /*List<String> listImageKey = shopeeService.uploadImagesToShopee(createProductCriteria.getSearchKey(), i);
-    listImageKey.stream().forEach(System.out::println);*/
-    List<String> listImageKey = Arrays.asList("vn-11134207-7qukw-ljed8xcoqxg22c", "vn-11134207-7qukw-ljed8xcosc0i1a");
+    // Create a RequestEntity with the headers
     String updatedBody = CommonCreateProduct.updateProductInfo(createProductCriteria.getProductName(),
         createProductCriteria.getDescription(), listImageKey, createProductBody);
-
-    // Create a RequestEntity with the headers
     RequestEntity<String> requestEntity = new RequestEntity<String>(
         Optional.ofNullable(updatedBody).isPresent() ? updatedBody : StringUtils.EMPTY, headers, HttpMethod.POST,
         URI.create(createProductUrl));

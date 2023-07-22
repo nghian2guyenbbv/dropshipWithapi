@@ -7,11 +7,13 @@ import com.working.dropshipWithapi.service.selly.GetInfoFromSelly;
 import com.working.dropshipWithapi.service.shopee.ShopeeService;
 import com.working.dropshipWithapi.service.shopee.createProduct.CreateProductService;
 import com.working.dropshipWithapi.service.shopee.request.CreateProductCriteria;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 
 import java.lang.reflect.GenericArrayType;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -29,11 +31,19 @@ public class DropshipWithapiApplication {
     SellyInfoResponse response = sellyInfo.getInfoFromSelly(searchKeys);
     /*List<String> listImage = shopeeService.uploadImagesToShopee();
     listImage.stream().forEach(System.out::println);*/
-    /*B2 Create product*/
-     response.getData().getProducts().forEach(pr-> {
-      createProductService.createProduct(
-          CreateProductCriteria.builder().productName(pr.getName()).description(pr.getShareDesc())
-              .shareImages(pr.getShareImages()).searchKey(searchKeys).build());
+    /*B2 Create list criteria product */
+    List<CreateProductCriteria> listCriteria = new ArrayList<CreateProductCriteria>();
+    response.getData().getProducts().forEach(pr->{
+      CreateProductCriteria productCriteria = CreateProductCriteria.builder().productName(pr.getName()).description(
+          StringUtils.defaultIfEmpty(pr.getShareDesc(), StringUtils.EMPTY)).shareImages(pr.getShareImages()).searchKey(searchKeys).build();
+      listCriteria.add(productCriteria);
+    });
+    listCriteria.forEach(cr->{
+      cr.getShareImages().forEach(sr->System.out.println("sr: "+sr));
+    });
+    /*B3 Create product*/
+     listCriteria.forEach(pr-> {
+      createProductService.createProduct(pr);
     });
   }
 

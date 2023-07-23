@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 public class DropshipWithapiApplication {
 
   public static void main(String[] args) {
-    String searchKeys = "quan lung nam";
+    String searchKeys = "bong ro";
     ApplicationContext context = SpringApplication.run(DropshipWithapiApplication.class, args);
     GetInfoFromSelly sellyInfo = context.getBean(GetInfoFromSelly.class);
     ShopeeService shopeeService = context.getBean(ShopeeService.class);
@@ -37,9 +37,6 @@ public class DropshipWithapiApplication {
       CreateProductCriteria productCriteria = CreateProductCriteria.builder().productName(pr.getName()).description(
           StringUtils.defaultIfEmpty(pr.getShareDesc(), StringUtils.EMPTY)).shareImages(pr.getShareImages()).searchKey(searchKeys).build();
       listCriteria.add(productCriteria);
-    });
-    listCriteria.forEach(cr->{
-      cr.getShareImages().forEach(sr->System.out.println("sr: "+sr));
     });
     /*B3 Create product*/
      listCriteria.forEach(pr-> {

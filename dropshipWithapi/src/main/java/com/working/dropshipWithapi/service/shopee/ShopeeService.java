@@ -21,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
@@ -30,6 +31,7 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -50,17 +52,17 @@ public class ShopeeService {
 
   public List<String> uploadImagesToShopee(String imgUrl, List<Path> filePaths) {
     String folderImagePath = "D:/NghiaNguyen/dropShipWithApi/dropshipWithapi/dropshipWithapi/imageFromSelly";
-    List<String> listKeysImage = new ArrayList<String>();
+    List<String> lisKey = new ArrayList<>();
     CollectionUtils.emptyIfNull(filePaths).stream().forEach(path->{
-      String rp = uploadImageIntoShopee(path.toFile().getName()).apply(path.toString());
-      if (!StringUtils.EMPTY.equalsIgnoreCase(rp)) {
-        System.out.println("--key-----"+rp);
-        listKeysImage.add(rp);
+      String keyImage = uploadImageIntoShopee(path.toFile().getName()).apply(path.toString());
+      if (!StringUtils.EMPTY.equalsIgnoreCase(keyImage)) {
+        System.out.println("--key-----"+keyImage);
+        lisKey.add(keyImage);
       }
     }
     );
     removeImageInfolder().accept(folderImagePath);
-    return listKeysImage;
+    return lisKey.stream().filter(StringUtils::isNoneBlank).collect(Collectors.toList());
   }
 
   private Consumer<String> removeImageInfolder() {
@@ -79,7 +81,8 @@ public class ShopeeService {
 
   public Function<String, String> uploadImageIntoShopee(String fileName) {
     String[] fileN = fileName.split("\\.");
-    String shopeeKey = "vn-07162023-"+ fileN[0];
+    String[] rawKey = fileN[0].split("_");
+    String shopeeKey = "vn-11134207-7qukw-"+ rawKey[8]+"pppp";
     String urlUpload = "https://upload.ws.img.shopee.com/file/upload";
     RestTemplate restTemplate = new RestTemplate();
     return fileToUPload -> {
@@ -100,8 +103,10 @@ public class ShopeeService {
       boolean isUploadSucess = false;
       try {
         ResponseEntity<String> response = restTemplate.exchange(requestEntity, String.class);
-      } catch (HttpServerErrorException ex) {
-        isUploadSucess = ex.getStatusCode()!=null && ex.getMessage().contains("hash");
+      } catch (HttpServerErrorException | HttpClientErrorException ex) {
+        isUploadSucess = (ex.getStatusCode() != null && ex.getMessage().contains("hash")) || ex.getMessage()
+            .contains("File Already Exist");
+        return isUploadSucess ? shopeeKey : StringUtils.EMPTY;
       }
       return isUploadSucess ? shopeeKey : StringUtils.EMPTY;
     };

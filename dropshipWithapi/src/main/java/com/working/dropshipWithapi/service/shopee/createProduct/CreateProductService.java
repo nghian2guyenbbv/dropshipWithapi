@@ -39,6 +39,8 @@ public class CreateProductService {
   private static final String COOKIE = "Cookie";
   private static final String CONTENT_TYPE = "content-type";
 
+  private static final String SOLD_OUT_IMAGE = "vn-11134207-7qukw-ACCGIqfTRfqqqq";
+
   @Autowired
   private GetInfoFromSelly getInfoFromSelly;
 
@@ -104,21 +106,23 @@ public class CreateProductService {
     HttpHeaders headers = new HttpHeaders();
     headers.add(COOKIE, createProductCookie);
     headers.add(CONTENT_TYPE, "application/json;charset=UTF-8");
-    List<String> listImageName = new ArrayList<>();
-    List<String> listImageKey = null;
+    List<String> listImageKey = new ArrayList<>();
     for (String imgUrl : createProductCriteria.getShareImages()) {
       System.out.println("-----get image ----" + imgUrl);
       // get Image from selly
       getInfoFromSelly.getImageAsFile(imgUrl);
       List<Path> listImagePath = getListImgPath();
-      //listImagePath.forEach(imgPath-> System.out.println("imagePath: "+imgPath));
       //List<String> listImageKey = Arrays.asList("vn-07162023-ACTIVE_MEN_PLUS_HỖ_TRỢ_TĂNG_CƯỜNG_SINH_LỰC_NAM_GIỚI,_KÉO_DÀI_THỜI_GIAN_QUAN_HỆ_HỘP_30_VIÊN_-_DOPPELHERZ_3", "vn-07162023-ACTIVE_MEN_PLUS_HỖ_TRỢ_TĂNG_CƯỜNG_SINH_LỰC_NAM_GIỚI,_KÉO_DÀI_THỜI_GIAN_QUAN_HỆ_HỘP_30_VIÊN_-_DOPPELHERZ_4");
-      listImageKey = shopeeService.uploadImagesToShopee(imgUrl, listImagePath);
-      listImageKey.stream().forEach(System.out::println);
+      List<String> imagePath = shopeeService.uploadImagesToShopee(imgUrl, listImagePath);
+      if(imagePath != null && imagePath.size() > 0){
+        listImageKey.add(Optional.ofNullable(imagePath.get(0)).orElse(SOLD_OUT_IMAGE));
+        listImageKey.stream().forEach(key->{System.out.println("ImageKey: "+key);});
+      }
       /* remove all file in selly image folder*/
     }
     // Upload images get keys
     // Create a RequestEntity with the headers
+    System.out.println("------ Create product ---------");
     String updatedBody = CommonCreateProduct.updateProductInfo(createProductCriteria.getProductName(),
         createProductCriteria.getDescription(), listImageKey, createProductBody);
     RequestEntity<String> requestEntity = new RequestEntity<String>(
@@ -126,29 +130,7 @@ public class CreateProductService {
         URI.create(createProductUrl));
     ResponseEntity<CreateProductShopeeResponse> response = restTemplate.exchange(requestEntity,
         CreateProductShopeeResponse.class);
-    Optional.ofNullable(response).ifPresent(rs -> System.out.println(rs.getBody().getMessage()));
+    Optional.ofNullable(response).ifPresent(rs -> System.out.println("create product response: "+rs.getBody().getMessage()));
   }
-
-  private static String updateProductName(String itemName, String rawBody) {
-    try {
-      JSONArray jsonArray = new JSONArray(rawBody);
-      JSONObject jsonObject = jsonArray.getJSONObject(0);
-      String itemNameJson = jsonObject.getString("name");
-
-      // Update the value using StringUtils
-      String updatedName = StringUtils.capitalize(itemNameJson); // Example transformation
-      jsonObject.put("name", itemName);
-
-      // Convert back to string
-      //return jsonArray.toString();
-      String jsonString = jsonArray.toString();
-      byte[] utf8Bytes = jsonString.getBytes(java.nio.charset.StandardCharsets.UTF_8);
-      return new String(utf8Bytes, java.nio.charset.StandardCharsets.UTF_8);
-    } catch (JSONException e) {
-      e.printStackTrace();
-    }
-    return StringUtils.EMPTY;
-  }
-
 
 }

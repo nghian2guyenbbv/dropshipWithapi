@@ -12,4 +12,9 @@ public class RenovateControler {
   public String getMessage(){
     return "message";
   }
+
+  @GetMapping("/errorcode")
+  public String getErrorcode(){
+    return "message";
+  }
 }

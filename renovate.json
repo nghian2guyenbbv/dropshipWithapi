@@ -4,6 +4,6 @@
     "config:base"
   ],
   "packageRules":[
-    "platformAutomerge": true
-  ]
+  ],
+  "platformAutomerge": true
 }

@@ -6,7 +6,7 @@
   "packageRules":[
     {
       "packageNames": ["*"],
-      "upgradeTypes": ["security"],
+      "schedule": "interval:daily",
       "enabled": true
     }
   ],

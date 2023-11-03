@@ -1,10 +1,14 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:base",
-    "preset:vulnerabilities"
+    "config:base"
   ],
   "packageRules":[
+    {
+      "packageNames": ["*"],
+      "upgradeTypes": ["security"],
+      "enabled": true
+    }
   ],
   "platformAutomerge": true
 }

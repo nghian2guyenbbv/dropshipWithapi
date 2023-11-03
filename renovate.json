@@ -4,11 +4,6 @@
     "config:base"
   ],
   "packageRules":[
-    {
-      "packageNames": ["*"],
-      "schedule": "interval:daily",
-      "enabled": true
-    }
   ],
   "platformAutomerge": true
 }
